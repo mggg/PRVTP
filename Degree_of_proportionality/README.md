@@ -7,4 +7,6 @@ This folder contains code and data for computing DOP from waterfall plots.
 - slope_data contains slope tables from waterfall plots
 
 To regenerate waterfall figs, will need to unzip the election_results file. Sorry that it isn't in a smarter format, future users.
+https://www.dropbox.com/s/71uum7hjyo961fi/election_results.zip?dl=0
+
 The png figures are the ones intended for the paper.
