@@ -1,0 +1,31 @@
+There are 100000 many ballots (counted with frequency) in the profile.
+1st place W 84389 84.39 %
+1st place C 15611 15.61 %
+2nd place W 66119 66.119 %
+2nd place C 33881 33.881 %
+3rd place W 34008 34.008 %
+3rd place C 65992 65.992 %
+4th place W 15484 15.484 %
+4th place C 84516 84.516 %
+
+borda length 4
+W candidates received 619413 borda points which is 61.94 percent
+C candidates received 380587 borda points which is 38.06 percent
+Total borda 1000000.0 
+
+headed by C
+Borda score for C candidates 85732 which is 54.92 percent
+Borda score for W candidates 70378 which is 45.08 percent
+Second place for C candidates 1756 which is 11.25 percent
+Second place for W candidates 13855 which is 88.75 percent
+Third place for C candidates 4165 which is 26.68 percent
+Third place for W candidates 11446 which is 73.32 percent
+
+headed by W
+Borda score for C candidates 294855 which is 34.94 percent
+Borda score for W candidates 549035 which is 65.06 percent
+Second place for C candidates 32125 which is 38.07 percent
+Second place for W candidates 52264 which is 61.93 percent
+Third place for C candidates 61827 which is 73.26 percent
+Third place for W candidates 22562 which is 26.74 percent
+
