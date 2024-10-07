@@ -8,7 +8,7 @@ from scipy.optimize import fsolve
 from functools import partial
 from pathlib import Path
 from BT_coh_to_fpv import slate_BT_fpv_to_coh
-
+from helper import assign_cand_names
 
 def score_share(profile, score_vector, candidate_subset):
     """
@@ -67,70 +67,104 @@ B_borda_shares = [-1]* N_TRIALS
 f_place_votes = [-1]*N_TRIALS
 
 
-
-
 # uniform support for all
-if pi_type == "U":
+if pi_type == "UU":
     alphas = {"A": {"A": uniform_dirichlet, "B": uniform_dirichlet},
             "B":{"A": uniform_dirichlet, "B": uniform_dirichlet}}
     
-# strong for B cands, unif for A cands
-elif pi_type == "XB":
+# strong for BB, unif else
+elif pi_type == "UX":
+    alphas = {"A": {"A": uniform_dirichlet, "B": uniform_dirichlet},
+            "B":{"A": uniform_dirichlet, "B": strong_dirichlet}}
+    
+# strong AB and BB, unif else, agree in strong
+elif pi_type == "XXsame":
     alphas = {"A": {"A": uniform_dirichlet, "B": strong_dirichlet},
             "B":{"A": uniform_dirichlet, "B": strong_dirichlet}}
     
-# strong for A cands, unif for B cands
-elif pi_type == "XA":
-    alphas = {"A": {"A": strong_dirichlet, "B": uniform_dirichlet},
-            "B":{"A": strong_dirichlet, "B": uniform_dirichlet}}
+# strong AB and BB, unif else, no enforced agree in strong
+elif pi_type == "XXdif":
+    alphas = {"A": {"A": uniform_dirichlet, "B": strong_dirichlet},
+            "B":{"A": uniform_dirichlet, "B": strong_dirichlet}}
+
+
+pref_intervals_by_bloc = {"A": {"A":PreferenceInterval.from_dirichlet(slate_to_candidates["A"], alphas["A"]["A"]), 
+                                    "B":PreferenceInterval.from_dirichlet(slate_to_candidates["B"], alphas["A"]["B"])},
+                              "B": {"A":PreferenceInterval.from_dirichlet(slate_to_candidates["A"], alphas["B"]["A"]), 
+                                    "B":PreferenceInterval.from_dirichlet(slate_to_candidates["B"], alphas["B"]["B"])}}
+
+# strong alignment
+if pi_type == "XXsame":
+    pref_intervals_by_bloc["A"]["B"] = assign_cand_names(pref_intervals_by_bloc["A"]["B"], [("B0",0)])
+    pref_intervals_by_bloc["B"]["B"] = assign_cand_names(pref_intervals_by_bloc["B"]["B"], [("B0",0)])
+
+
+
+
+
+"""
+# # uniform support for all
+# if pi_type == "U":
+#     alphas = {"A": {"A": uniform_dirichlet, "B": uniform_dirichlet},
+#             "B":{"A": uniform_dirichlet, "B": uniform_dirichlet}}
     
-# B has strong pref, A has unif
-elif pi_type == "BX":
-    alphas = {"A": {"A": uniform_dirichlet, "B": uniform_dirichlet},
-            "B":{"A": strong_dirichlet, "B": strong_dirichlet}}
+# # strong for B cands, unif for A cands
+# elif pi_type == "XB":
+#     alphas = {"A": {"A": uniform_dirichlet, "B": strong_dirichlet},
+#             "B":{"A": uniform_dirichlet, "B": strong_dirichlet}}
+    
+# # strong for A cands, unif for B cands
+# elif pi_type == "XA":
+#     alphas = {"A": {"A": strong_dirichlet, "B": uniform_dirichlet},
+#             "B":{"A": strong_dirichlet, "B": uniform_dirichlet}}
+    
+# # B has strong pref, A has unif
+# elif pi_type == "BX":
+#     alphas = {"A": {"A": uniform_dirichlet, "B": uniform_dirichlet},
+#             "B":{"A": strong_dirichlet, "B": strong_dirichlet}}
 
-# A has strong pref, B has unif
-elif pi_type == "AX":
-    alphas = {"A": {"A": strong_dirichlet, "B": strong_dirichlet},
-            "B":{"A": uniform_dirichlet, "B": uniform_dirichlet}}
+# # A has strong pref, B has unif
+# elif pi_type == "AX":
+#     alphas = {"A": {"A": strong_dirichlet, "B": strong_dirichlet},
+#             "B":{"A": uniform_dirichlet, "B": uniform_dirichlet}}
 
-# B has strong pref, A has strong pref
-elif pi_type == "X":
-    alphas = {"A": {"A": strong_dirichlet, "B": strong_dirichlet},
-            "B":{"A": strong_dirichlet, "B": strong_dirichlet}}
-
+# # B has strong pref, A has strong pref
+# elif pi_type == "X":
+#     alphas = {"A": {"A": strong_dirichlet, "B": strong_dirichlet},
+#             "B":{"A": strong_dirichlet, "B": strong_dirichlet}}
+"""
 
 
 
 if g == "slate-PL":
-    generator = bg.slate_PlackettLuce.from_params(candidates = slate_to_candidates["A"] + slate_to_candidates["B"],
+    generator = bg.slate_PlackettLuce(candidates = slate_to_candidates["A"] + slate_to_candidates["B"],
                                 bloc_voter_prop = bloc_props,
-                                alphas = alphas,
+                                pref_intervals_by_bloc = pref_intervals_by_bloc,
                                 cohesion_parameters=cohesion,
                                 slate_to_candidates=slate_to_candidates)
     
     
             
 elif g == "slate-BT":
-    generator = bg.slate_BradleyTerry.from_params(candidates = slate_to_candidates["A"] + slate_to_candidates["B"],
+    generator = bg.slate_BradleyTerry(candidates = slate_to_candidates["A"] + slate_to_candidates["B"],
                                 bloc_voter_prop = bloc_props,
-                                alphas = alphas,
+                                pref_intervals_by_bloc = pref_intervals_by_bloc,
                                 cohesion_parameters=cohesion,
                                 slate_to_candidates=slate_to_candidates)
     
     
 elif g == "slate-CS-W":
-    generator = bg.CambridgeSampler.from_params(candidates = slate_to_candidates["A"] + slate_to_candidates["B"],
+    generator = bg.CambridgeSampler(candidates = slate_to_candidates["A"] + slate_to_candidates["B"],
                                 bloc_voter_prop = bloc_props,
-                                alphas = alphas,
+                                pref_intervals_by_bloc = pref_intervals_by_bloc,
                                 cohesion_parameters=cohesion,
                                 slate_to_candidates=slate_to_candidates,
                                 W_bloc = "B",
                                 C_bloc = "A")
 elif g == "slate-CS-C":
-    generator = bg.CambridgeSampler.from_params(candidates = slate_to_candidates["A"] + slate_to_candidates["B"],
+    generator = bg.CambridgeSampler(candidates = slate_to_candidates["A"] + slate_to_candidates["B"],
                                 bloc_voter_prop = bloc_props,
-                                alphas = alphas,
+                                pref_intervals_by_bloc = pref_intervals_by_bloc,
                                 cohesion_parameters=cohesion,
                                 slate_to_candidates=slate_to_candidates,
                                 W_bloc = "A",
@@ -158,14 +192,12 @@ for i in range(N_TRIALS):
     #     pickle.dump(pp.to_dict(), file)
 
     election = STV(profile= pp,
-        transfer = fractional_transfer,
-        seats = N_SEATS,
-        quota = "droop",
-        ballot_ties = False,
+        m = N_SEATS,
+        simultaneous = True,
         tiebreak = "random",
     )
-    results = election.run_election()
-    winners= [c for s in results.winners() for c in s]
+    
+    winners= [c for s in election.get_elected(-1) for c in s]
     num_B_winners[i] = len([c for c in winners if "B" in c])
     
 df  = pd.DataFrame({"B cands elected":num_B_winners, "B Borda shares": B_borda_shares, "B fpv": f_place_votes})
