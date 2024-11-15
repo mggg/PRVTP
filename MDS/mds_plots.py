@@ -5,7 +5,8 @@ from votekit import Ballot, PreferenceProfile
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import sys, pickle
-
+from functools import partial
+from peter_slate_emd import slate_earth_mover_dist
 args = sys.argv[1:]
 metric = args[0]
 b_coh = float(args[1])
@@ -69,6 +70,7 @@ slate_to_candidates = {"A": [f"A_{i}" for i in range(cand_per_slate)],
                        "B": [f"B_{i}" for i in range(cand_per_slate)]}
 model_to_color = {'CS-C': '#D2691E', 'CS-W': '#E32636', 's-BT': '#FFBF00', 's-PL': '#8DB600'}
 models = list(model_to_color.keys())
+emd_slate_to_candidates = {c: [c] for c_list in slate_to_candidates.values() for c in c_list}
 profile_dict = {(m, s) :[] for m in models for s in pref_scenarios}
 
 
@@ -121,7 +123,7 @@ for pref_scenario_str, b_alphas in pref_scenario_settings.items():
 
 
 if metric == "emd":
-    distance = earth_mover_dist
+    distance = partial(slate_earth_mover_dist, slate_dict=emd_slate_to_candidates)
 
 elif metric == "l1":
     distance = lp_dist
@@ -145,6 +147,3 @@ plt.title(f"{metric.upper()} MDS b_coh = {b_coh}")
 patches = [mpatches.Patch(color=color, label=label) for label, color in model_to_color.items()]
 plt.legend(handles=patches, loc='center left', bbox_to_anchor=(1, 1/2))
 plt.savefig(f"Figures/mds_plot_{metric}_b_coh_{b_coh}.png", dpi = 300)
-
-
-
