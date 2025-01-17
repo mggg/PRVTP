@@ -63,6 +63,7 @@ def dist_to_solid_bloc_ballot(bloc_type_ballot, bloc_order):
     # then compute the solid bloc ballot
     solid_bloc_ballot = "".join([b*bloc_counts[b] for b in bloc_order])
     
+
     # convert it to averaged rank encoding
     avg_rank_solid = bloc_type_to_avg_rank(solid_bloc_ballot)
 
@@ -163,6 +164,34 @@ def dist_profile_to_solid(profile, cand_to_bloc, bloc_order):
 
     return data
     
+def symmetric_dist_profile_to_solid(profile, cand_to_bloc, blocs):
+    """
+    Compute the distance of each ballot in profile to closest solid bloc ballot under swap distance.
+    Assumes each ballot has integer weight.
+
+    Arguments:
+        profile (votekit.PreferenceProfile): each ballot must have integer weight
+        cand_to_bloc (dict[str, str]): candidate name to bloc dictionary
+        blocs (str): Blocs to consider. eg "AB"
+    """
+    # returns a dictionary type:count
+    ballot_types = profile_to_bloc_ballot_type(profile, cand_to_bloc)
+
+    if any(ballot.weight != int(ballot.weight) for ballot in profile.ballots):
+        raise ValueError("All ballots must have integer weight")
+    
+    data = [-1]*int(profile.total_ballot_wt)
+    k=0
+    for ballot_type, weight in ballot_types.items():
+        weight = int(weight)
+        dist_1 = dist_to_solid_bloc_ballot(ballot_type, blocs)
+        dist_2 = dist_to_solid_bloc_ballot(ballot_type, blocs[::-1])
+
+        dist = min(dist_1, dist_2)
+        data[k:k+weight] = [dist]*weight
+        k += weight
+
+    return data
 
 
 # l1 trick does not hold for arbitrary ballots
