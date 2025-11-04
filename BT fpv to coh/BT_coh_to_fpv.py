@@ -1,7 +1,8 @@
 from scipy.optimize import fsolve
 from functools import partial
 
-def cyclotomic(x,y,n):
+
+def cyclotomic(x, y, n):
     """
     Return the term x^{n-1}+x^{n-2}y+...+xy^{n-2}+y^{n-1}
     from factoring x^n-y^n.
@@ -14,8 +15,7 @@ def cyclotomic(x,y,n):
         float
     """
 
-    return sum([(x**(n-i))*(y**(i-1)) for i in range(1, n+1)])
-
+    return sum([(x ** (n - i)) * (y ** (i - 1)) for i in range(1, n + 1)])
 
 
 def slate_BT_coh_to_fpv(num_bloc_cands, num_opp_bloc_cands, bloc_coh):
@@ -32,18 +32,15 @@ def slate_BT_coh_to_fpv(num_bloc_cands, num_opp_bloc_cands, bloc_coh):
 
     """
 
-    r,s,p = num_bloc_cands, num_opp_bloc_cands, bloc_coh
+    r, s, p = num_bloc_cands, num_opp_bloc_cands, bloc_coh
 
-    if 0 <= p <= 1:
-        return (p**s*cyclotomic(1-p, p, r))/(cyclotomic(1-p, p, r+s))
-    else:
-        raise ValueError("Cohesion must be in [0,1].")
+    return (p**s * cyclotomic(1 - p, p, r)) / (cyclotomic(1 - p, p, r + s))
 
 
 def slate_BT_fpv_to_coh(num_bloc_cands, num_opp_bloc_cands, fpv):
     """
     Computes the cohesion parameter that would cause slate-BT to have the given fpv share.
-    
+
     Arguments:
         num_bloc_cands (int): number of candidates in current bloc.
         num_opp_bloc_cands (int): number of candidates in opposing bloc.
@@ -53,20 +50,19 @@ def slate_BT_fpv_to_coh(num_bloc_cands, num_opp_bloc_cands, fpv):
         float: cohesion parameter for bloc.
     """
 
-    r,s = num_bloc_cands, num_opp_bloc_cands
+    r, s = num_bloc_cands, num_opp_bloc_cands
 
     # odd ordering is required to make r,s,fpv keyword arguments for partial call below
-    def equation(coh, r=1, s=1, fpv = 1/2):
-        return slate_BT_coh_to_fpv(r,s,coh) - fpv
-    
-    # fsolve takes an equation in one variable and an estimate of where to start, 
+    def equation(coh, r=1, s=1, fpv=1 / 2):
+        return slate_BT_coh_to_fpv(r, s, coh) - fpv
+
+    # fsolve takes an equation in one variable and an estimate of where to start,
     # which we take to be fpv
     coh_list = fsolve(partial(equation, r=r, s=s, fpv=fpv), fpv)
 
     # equation is proven to be increasing on [0,1] so there is unique solution
+
     return coh_list[0]
-
-
 
 
 # testing
